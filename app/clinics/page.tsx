@@ -5,8 +5,8 @@ export default function ArchitecturePage() {
   return (
     <div className="min-h-screen bg-white">
       <header className="p-6 border-b border-gray-200">
-        <Link href="/" className="text-2xl font-semibold text-black tracking-tight hover:text-red-600 transition-colors">
-          Hawkeye
+        <Link href="/" className="text-2xl font-semibold text-black tracking-tight hover:text-red-600 transition-colors orpheus">
+          Clara
         </Link>
       </header>
 

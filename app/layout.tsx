@@ -21,8 +21,8 @@ const instrumentSerif = Instrument_Serif({
 })
 
 export const metadata: Metadata = {
-  title: "Hawkeye",
-  description: "AI-Powered Insider Trading Intelligence",
+  title: "Clara",
+  description: "AI-Powered Healthcare Approvals - Bridging clinics and insurers",
   generator: "v0.app",
   icons: {
     icon: [
@@ -42,12 +42,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="stylesheet" href="https://use.typekit.net/ohl2xan.css" />
         <style>{`
 html {
   font-family: ${figtree.style.fontFamily};
   --font-sans: ${figtree.variable};
   --font-mono: ${GeistMono.variable};
   --font-instrument-serif: ${instrumentSerif.variable};
+  --font-orpheus-pro: "orpheus-pro", serif;
 }
         `}</style>
       </head>

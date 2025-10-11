@@ -17,8 +17,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-8">
-            <Link href="/" className="text-2xl font-semibold text-gray-900 tracking-tight">
-              Hawkeye
+            <Link href="/" className="text-2xl font-semibold text-gray-900 tracking-tight orpheus">
+              Clara
             </Link>
             <nav className="flex items-center gap-1">
               <button
