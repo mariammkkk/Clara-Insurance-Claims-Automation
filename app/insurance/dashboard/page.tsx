@@ -196,29 +196,52 @@ export default function InsuranceDashboard() {
         </div>
       </main>
 
-      {/* Case Detail Modal */}
       {showDetailModal && selectedCase && (() => {
-        // Parse diagnosis analysis
         let aiAnalysis = null
         let analysisError = null
         try {
           if (selectedCase.diagnosis_analysis) {
-            // Check if it's a plain error message string
             if (selectedCase.diagnosis_analysis.startsWith('Analysis failed:')) {
               analysisError = selectedCase.diagnosis_analysis
             } else {
-              // First parse the outer JSON to get the response structure
               const outerParsed = JSON.parse(selectedCase.diagnosis_analysis)
+              const resultContent: any = (outerParsed && outerParsed.result) ? outerParsed.result : outerParsed
 
-              // The actual data is in the 'result' field as a JSON string
-              // If 'result' doesn't exist, try parsing the outer object directly
-              const resultString = outerParsed.result || selectedCase.diagnosis_analysis
-              const innerParsed = typeof resultString === 'string' ? JSON.parse(resultString) : outerParsed
+              if (typeof resultContent === 'string') {
+                const lines = resultContent.split(/\n+/)
+                let confidence: string | number | undefined
+                let summary: string | undefined
+                let decision: string | undefined
 
-              aiAnalysis = {
-                finalDecision: innerParsed.final_decision || 'N/A',
-                confidenceScore: innerParsed.confidence || 'N/A',
-                summaryReasoning: innerParsed.summary_reasoning || 'N/A'
+                for (const line of lines) {
+                  const cleaned = line.replace(/^\(\d+\)\s*/, '').trim()
+                  const [labelRaw, ...rest] = cleaned.split(':')
+                  const label = (labelRaw || '').toLowerCase()
+                  const value = rest.join(':').trim()
+
+                  if (label.startsWith('confidence')) {
+                    const num = parseFloat(value)
+                    confidence = isNaN(num) ? value : num
+                  } else if (label.startsWith('summary')) {
+                    summary = value
+                  } else if (label.startsWith('decision')) {
+                    decision = value
+                  }
+                }
+
+                aiAnalysis = {
+                  finalDecision: decision || 'N/A',
+                  confidenceScore: confidence ?? 'N/A',
+                  summaryReasoning: summary || 'N/A'
+                }
+              } else if (typeof resultContent === 'object' && resultContent !== null) {
+                aiAnalysis = {
+                  finalDecision: resultContent.final_decision || resultContent.decision || 'N/A',
+                  confidenceScore: resultContent.confidence || resultContent.confidence_score || 'N/A',
+                  summaryReasoning: resultContent.summary_reasoning || resultContent.summary_reason || 'N/A'
+                }
+              } else {
+                analysisError = 'Unrecognized AI analysis format'
               }
             }
           }
