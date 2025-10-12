@@ -9,6 +9,9 @@ export default function InsuranceDashboard() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [cases, setCases] = useState<any[]>([])
+  const [selectedCase, setSelectedCase] = useState<any>(null)
+  const [showDetailModal, setShowDetailModal] = useState(false)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -20,11 +23,28 @@ export default function InsuranceDashboard() {
       }
 
       setUser(user)
+      await fetchCases(user.email)
       setLoading(false)
     }
 
     checkAuth()
   }, [router])
+
+  const fetchCases = async (insurerEmail: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('cases')
+        .select('*')
+        .eq('insurer_email', insurerEmail)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      setCases(data || [])
+    } catch (err) {
+      console.error('Error fetching cases:', err)
+    }
+  }
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -95,19 +115,171 @@ export default function InsuranceDashboard() {
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Requests for Review
           </h2>
-          <p className="text-gray-500 text-center py-8">
-            No pending requests at this time. Check back later for new submissions.
-          </p>
-          <div className="mt-6 flex gap-4">
-            <button className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg transition-colors">
-              View All Requests
-            </button>
-            <button className="flex-1 bg-white hover:bg-gray-50 text-blue-600 font-semibold py-3 px-8 rounded-lg border-2 border-blue-500 transition-colors">
-              Generate Report
-            </button>
-          </div>
+
+          {cases.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">
+              No pending requests at this time. Check back later for new submissions.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {cases.map((caseItem) => (
+                <div
+                  key={caseItem.id}
+                  onClick={() => {
+                    setSelectedCase(caseItem)
+                    setShowDetailModal(true)
+                  }}
+                  className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all cursor-pointer"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900">
+                        Claim ID: {caseItem.claim_id}
+                      </h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {caseItem.diagnosis} - {caseItem.procedure_category}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Patient Age: {caseItem.patient_age} | ICD: {caseItem.icd_code} | CPT: {caseItem.cpt_code}
+                      </p>
+                      <p className="text-xs text-blue-600 mt-2 font-medium">
+                        From: {caseItem.clinic_email}
+                      </p>
+                    </div>
+                    <div className="ml-4">
+                      <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                        {caseItem.decision || 'Pending'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
+
+      {/* Case Detail Modal */}
+      {showDetailModal && selectedCase && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 sticky top-0 bg-white">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-900">
+                    Case Details - {selectedCase.claim_id}
+                  </h2>
+                  <p className="text-sm text-blue-600 mt-1">
+                    Submitted by: {selectedCase.clinic_email}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowDetailModal(false)
+                    setSelectedCase(null)
+                  }}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Claim ID</h3>
+                    <p className="text-gray-900">{selectedCase.claim_id}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Patient Age</h3>
+                    <p className="text-gray-900">{selectedCase.patient_age}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Diagnosis</h3>
+                    <p className="text-gray-900">{selectedCase.diagnosis}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">ICD Code</h3>
+                    <p className="text-gray-900">{selectedCase.icd_code}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">CPT Code</h3>
+                    <p className="text-gray-900">{selectedCase.cpt_code}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Procedure Category</h3>
+                    <p className="text-gray-900">{selectedCase.procedure_category}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Decision</h3>
+                    <p className="text-gray-900">{selectedCase.decision}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Patient Summary</h3>
+                    <p className="text-gray-900 bg-gray-50 p-3 rounded-lg whitespace-pre-wrap">
+                      {selectedCase.patient_summary}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Procedure Description</h3>
+                    <p className="text-gray-900 bg-gray-50 p-3 rounded-lg whitespace-pre-wrap">
+                      {selectedCase.procedure_description}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Explanation</h3>
+                    <p className="text-gray-900 bg-gray-50 p-3 rounded-lg whitespace-pre-wrap">
+                      {selectedCase.explanation}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Submitted</h3>
+                    <p className="text-gray-900">
+                      {new Date(selectedCase.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setShowDetailModal(false)
+                    setSelectedCase(null)
+                  }}
+                  className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-colors"
+                >
+                  Close
+                </button>
+                <button
+                  className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors"
+                >
+                  Approve
+                </button>
+                <button
+                  className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors"
+                >
+                  Reject
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

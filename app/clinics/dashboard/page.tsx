@@ -27,7 +27,8 @@ export default function ClinicsDashboard() {
     explanation: "",
     procedure_category: "",
     procedure_description: "",
-    patient_age: ""
+    patient_age: "",
+    insurer_email: ""
   })
 
   useEffect(() => {
@@ -49,11 +50,15 @@ export default function ClinicsDashboard() {
 
   const fetchCases = async (userId: string) => {
     try {
+      console.log('Fetching cases for user_id:', userId)
+
       const { data, error } = await supabase
         .from('cases')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
+
+      console.log('Fetch result:', { data, error })
 
       if (error) throw error
 
@@ -88,7 +93,8 @@ export default function ClinicsDashboard() {
           {
             ...formData,
             patient_age: parseInt(formData.patient_age),
-            user_id: user?.id
+            user_id: user?.id,
+            clinic_email: user?.email
           }
         ])
 
@@ -105,7 +111,8 @@ export default function ClinicsDashboard() {
         explanation: "",
         procedure_category: "",
         procedure_description: "",
-        patient_age: ""
+        patient_age: "",
+        insurer_email: ""
       })
 
       // Refresh cases list
@@ -291,6 +298,21 @@ export default function ClinicsDashboard() {
                     value={formData.patient_age}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
+                    required
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Insurer Email
+                  </label>
+                  <input
+                    type="email"
+                    name="insurer_email"
+                    value={formData.insurer_email}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
+                    placeholder="insurer@example.com"
                     required
                   />
                 </div>
