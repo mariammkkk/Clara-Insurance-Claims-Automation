@@ -32,7 +32,7 @@ export default function ShaderShowcase() {
                 </h2>
                 <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
                   Women's health care clinics have long been pitted against insurance companies since healthcare became a commoditized service. 
-                  A physician carefully reviews patient records, listens to symptoms, and builds an informed diagnosis—only for their claim to be 
+                  A physician carefully reviews patient records, listens to symptoms, and builds an informed diagnosis only for their claim to be 
                   denied by an insurer who lacks that context. Hours of phone calls and back and forth follow, delaying care and exhausting both sides.
                 </p>
               </div>
