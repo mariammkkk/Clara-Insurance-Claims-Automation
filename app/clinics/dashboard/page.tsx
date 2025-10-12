@@ -10,9 +10,12 @@ export default function ClinicsDashboard() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [showDetailModal, setShowDetailModal] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const [cases, setCases] = useState<any[]>([])
+  const [selectedCase, setSelectedCase] = useState<any>(null)
 
   const [formData, setFormData] = useState({
     claim_id: "",
@@ -37,11 +40,28 @@ export default function ClinicsDashboard() {
       }
 
       setUser(user)
+      await fetchCases(user.id)
       setLoading(false)
     }
 
     checkAuth()
   }, [router])
+
+  const fetchCases = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('cases')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      setCases(data || [])
+    } catch (err) {
+      console.error('Error fetching cases:', err)
+    }
+  }
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -87,6 +107,9 @@ export default function ClinicsDashboard() {
         procedure_description: "",
         patient_age: ""
       })
+
+      // Refresh cases list
+      await fetchCases(user?.id)
 
       setTimeout(() => {
         setShowModal(false)
@@ -160,20 +183,55 @@ export default function ClinicsDashboard() {
         </div>
 
         <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Recent Requests
-          </h2>
-          <p className="text-gray-500 text-center py-8">
-            No requests yet. Submit your first approval request to get started.
-          </p>
-          <div className="mt-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Recent Requests
+            </h2>
             <button
               onClick={() => setShowModal(true)}
-              className="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-3 px-8 rounded-lg transition-colors"
+              className="bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
             >
-              Submit New Request
+              + New Case
             </button>
           </div>
+
+          {cases.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">
+              No requests yet. Submit your first approval request to get started.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {cases.map((caseItem) => (
+                <div
+                  key={caseItem.id}
+                  onClick={() => {
+                    setSelectedCase(caseItem)
+                    setShowDetailModal(true)
+                  }}
+                  className="p-4 border border-gray-200 rounded-lg hover:border-teal-500 hover:bg-teal-50 transition-all cursor-pointer"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900">
+                        Claim ID: {caseItem.claim_id}
+                      </h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {caseItem.diagnosis} - {caseItem.procedure_category}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Patient Age: {caseItem.patient_age} | ICD: {caseItem.icd_code} | CPT: {caseItem.cpt_code}
+                      </p>
+                    </div>
+                    <div className="ml-4">
+                      <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-teal-100 text-teal-800">
+                        {caseItem.decision || 'Pending'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
 
@@ -368,6 +426,113 @@ export default function ClinicsDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Case Detail Modal */}
+      {showDetailModal && selectedCase && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 sticky top-0 bg-white">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-semibold text-gray-900">
+                  Case Details - {selectedCase.claim_id}
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowDetailModal(false)
+                    setSelectedCase(null)
+                  }}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Claim ID</h3>
+                    <p className="text-gray-900">{selectedCase.claim_id}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Patient Age</h3>
+                    <p className="text-gray-900">{selectedCase.patient_age}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Diagnosis</h3>
+                    <p className="text-gray-900">{selectedCase.diagnosis}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">ICD Code</h3>
+                    <p className="text-gray-900">{selectedCase.icd_code}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">CPT Code</h3>
+                    <p className="text-gray-900">{selectedCase.cpt_code}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Procedure Category</h3>
+                    <p className="text-gray-900">{selectedCase.procedure_category}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Decision</h3>
+                    <p className="text-gray-900">{selectedCase.decision}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Patient Summary</h3>
+                    <p className="text-gray-900 bg-gray-50 p-3 rounded-lg whitespace-pre-wrap">
+                      {selectedCase.patient_summary}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Procedure Description</h3>
+                    <p className="text-gray-900 bg-gray-50 p-3 rounded-lg whitespace-pre-wrap">
+                      {selectedCase.procedure_description}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Explanation</h3>
+                    <p className="text-gray-900 bg-gray-50 p-3 rounded-lg whitespace-pre-wrap">
+                      {selectedCase.explanation}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Submitted</h3>
+                    <p className="text-gray-900">
+                      {new Date(selectedCase.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => {
+                    setShowDetailModal(false)
+                    setSelectedCase(null)
+                  }}
+                  className="px-6 py-2 bg-teal-500 hover:bg-teal-600 text-white font-semibold rounded-lg transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
