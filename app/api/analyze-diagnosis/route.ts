@@ -3,17 +3,18 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { caseData } = body
+    const caseData = body?.caseData || body
 
     const userInput = `
+    Claim ID: ${caseData.claim_id}
+    Patient Age: ${caseData.patient_age}
+    Insurer Email: ${caseData.insurer_email}
     Patient Summary: ${caseData.patient_summary}
     Diagnosis: ${caseData.diagnosis}
     ICD Code: ${caseData.icd_code}
     CPT Code: ${caseData.cpt_code}
     Procedure Category: ${caseData.procedure_category}
     Procedure Description: ${caseData.procedure_description}
-    Patient Age: ${caseData.patient_age}
-    Decision: ${caseData.decision}
     Explanation: ${caseData.explanation}
     `.trim()
 
