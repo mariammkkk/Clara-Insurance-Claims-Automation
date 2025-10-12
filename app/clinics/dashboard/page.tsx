@@ -16,6 +16,9 @@ export default function ClinicsDashboard() {
   const [success, setSuccess] = useState("")
   const [cases, setCases] = useState<any[]>([])
   const [selectedCase, setSelectedCase] = useState<any>(null)
+  const [pendingCount, setPendingCount] = useState(0)
+  const [approvedCount, setApprovedCount] = useState(0)
+  const [rejectedCount, setRejectedCount] = useState(0)
 
   const [formData, setFormData] = useState({
     claim_id: "",
@@ -62,7 +65,17 @@ export default function ClinicsDashboard() {
 
       if (error) throw error
 
-      setCases(data || [])
+      const allCases = data || []
+      setCases(allCases)
+
+      // Calculate counts by status
+      const pending = allCases.filter(c => c.status === 'pending').length
+      const approved = allCases.filter(c => c.status === 'approved').length
+      const rejected = allCases.filter(c => c.status === 'rejected').length
+
+      setPendingCount(pending)
+      setApprovedCount(approved)
+      setRejectedCount(rejected)
     } catch (err) {
       console.error('Error fetching cases:', err)
     }
@@ -197,21 +210,21 @@ export default function ClinicsDashboard() {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Pending Requests
             </h3>
-            <p className="text-3xl font-bold text-teal-600">0</p>
+            <p className="text-3xl font-bold text-teal-600">{pendingCount}</p>
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Approved
             </h3>
-            <p className="text-3xl font-bold text-green-600">0</p>
+            <p className="text-3xl font-bold text-green-600">{approvedCount}</p>
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Rejected
             </h3>
-            <p className="text-3xl font-bold text-red-600">0</p>
+            <p className="text-3xl font-bold text-red-600">{rejectedCount}</p>
           </div>
         </div>
 
@@ -256,8 +269,12 @@ export default function ClinicsDashboard() {
                       </p>
                     </div>
                     <div className="ml-4">
-                      <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-teal-100 text-teal-800">
-                        {caseItem.decision || 'Pending'}
+                      <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
+                        caseItem.status === 'approved' ? 'bg-green-100 text-green-800' :
+                        caseItem.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {caseItem.status?.charAt(0).toUpperCase() + caseItem.status?.slice(1) || 'Pending'}
                       </span>
                     </div>
                   </div>

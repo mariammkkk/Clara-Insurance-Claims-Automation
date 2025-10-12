@@ -51,6 +51,26 @@ export default function InsuranceDashboard() {
     router.push("/insurance")
   }
 
+  const handleStatusUpdate = async (caseId: string, newStatus: 'approved' | 'rejected') => {
+    try {
+      const { error } = await supabase
+        .from('cases')
+        .update({ status: newStatus })
+        .eq('id', caseId)
+
+      if (error) throw error
+
+      // Refresh cases list
+      await fetchCases(user?.email)
+
+      // Close modal
+      setShowDetailModal(false)
+      setSelectedCase(null)
+    } catch (err) {
+      console.error('Error updating case status:', err)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -147,8 +167,12 @@ export default function InsuranceDashboard() {
                       </p>
                     </div>
                     <div className="ml-4">
-                      <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                        {caseItem.decision || 'Pending'}
+                      <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
+                        caseItem.status === 'approved' ? 'bg-green-100 text-green-800' :
+                        caseItem.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {caseItem.status?.charAt(0).toUpperCase() + caseItem.status?.slice(1) || 'Pending'}
                       </span>
                     </div>
                   </div>
@@ -219,8 +243,14 @@ export default function InsuranceDashboard() {
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Decision</h3>
-                    <p className="text-gray-900">{selectedCase.decision}</p>
+                    <h3 className="text-sm font-medium text-gray-500 mb-1">Status</h3>
+                    <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
+                      selectedCase.status === 'approved' ? 'bg-green-100 text-green-800' :
+                      selectedCase.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {selectedCase.status?.charAt(0).toUpperCase() + selectedCase.status?.slice(1) || 'Pending'}
+                    </span>
                   </div>
                 </div>
 
@@ -266,14 +296,18 @@ export default function InsuranceDashboard() {
                   Close
                 </button>
                 <button
-                  className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors"
+                  onClick={() => handleStatusUpdate(selectedCase.id, 'approved')}
+                  disabled={selectedCase.status === 'approved'}
+                  className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Approve
+                  {selectedCase.status === 'approved' ? 'Approved' : 'Approve'}
                 </button>
                 <button
-                  className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors"
+                  onClick={() => handleStatusUpdate(selectedCase.id, 'rejected')}
+                  disabled={selectedCase.status === 'rejected'}
+                  className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Reject
+                  {selectedCase.status === 'rejected' ? 'Rejected' : 'Reject'}
                 </button>
               </div>
             </div>
