@@ -197,33 +197,100 @@ export default function InsuranceDashboard() {
       </main>
 
       {/* Case Detail Modal */}
-      {showDetailModal && selectedCase && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 sticky top-0 bg-white">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-2xl font-semibold text-gray-900">
-                    Case Details - {selectedCase.claim_id}
-                  </h2>
-                  <p className="text-sm text-blue-600 mt-1">
-                    Submitted by: {selectedCase.clinic_email}
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    setShowDetailModal(false)
-                    setSelectedCase(null)
-                  }}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
+      {showDetailModal && selectedCase && (() => {
+        // Parse diagnosis analysis
+        let aiAnalysis = null
+        let analysisError = null
+        try {
+          if (selectedCase.diagnosis_analysis) {
+            // Check if it's a plain error message string
+            if (selectedCase.diagnosis_analysis.startsWith('Analysis failed:')) {
+              analysisError = selectedCase.diagnosis_analysis
+            } else {
+              // First parse the outer JSON to get the response structure
+              const outerParsed = JSON.parse(selectedCase.diagnosis_analysis)
 
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              // The actual data is in the 'result' field as a JSON string
+              // If 'result' doesn't exist, try parsing the outer object directly
+              const resultString = outerParsed.result || selectedCase.diagnosis_analysis
+              const innerParsed = typeof resultString === 'string' ? JSON.parse(resultString) : outerParsed
+
+              aiAnalysis = {
+                finalDecision: innerParsed.final_decision || 'N/A',
+                confidenceScore: innerParsed.confidence || 'N/A',
+                summaryReasoning: innerParsed.summary_reasoning || 'N/A'
+              }
+            }
+          }
+        } catch (err) {
+          console.error('Error parsing diagnosis_analysis:', err)
+          analysisError = 'Unable to parse AI analysis'
+        }
+
+        return (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6 border-b border-gray-200 sticky top-0 bg-white">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-gray-900">
+                      Case Details - {selectedCase.claim_id}
+                    </h2>
+                    <p className="text-sm text-blue-600 mt-1">
+                      Submitted by: {selectedCase.clinic_email}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowDetailModal(false)
+                      setSelectedCase(null)
+                    }}
+                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6">
+                {aiAnalysis && (
+                  <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                      <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      AI Analysis
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <p className="text-xs font-medium text-gray-600 mb-1">Final Decision</p>
+                        <p className="text-sm font-semibold text-gray-900">{aiAnalysis.finalDecision}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-gray-600 mb-1">Confidence Score</p>
+                        <p className="text-sm font-semibold text-gray-900">{aiAnalysis.confidenceScore}</p>
+                      </div>
+                      <div className="md:col-span-1">
+                        <p className="text-xs font-medium text-gray-600 mb-1">Summary Reasoning</p>
+                        <p className="text-sm text-gray-900">{aiAnalysis.summaryReasoning}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {analysisError && (
+                  <div className="mb-6 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+                    <h3 className="text-sm font-semibold text-yellow-800 mb-1 flex items-center">
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      AI Analysis Unavailable
+                    </h3>
+                    <p className="text-xs text-yellow-700">{analysisError}</p>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Claim ID</h3>
@@ -296,9 +363,9 @@ export default function InsuranceDashboard() {
                     </p>
                   </div>
                 </div>
-              </div>
+                </div>
 
-              <div className="mt-6 flex justify-end gap-3">
+                <div className="mt-6 flex justify-end gap-3">
                 <button
                   onClick={() => {
                     setShowDetailModal(false)
@@ -322,11 +389,12 @@ export default function InsuranceDashboard() {
                 >
                   {selectedCase.status === 'rejected' ? 'Rejected' : 'Reject'}
                 </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
     </div>
   )
 }
