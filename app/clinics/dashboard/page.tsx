@@ -514,7 +514,6 @@ export default function ClinicsDashboard() {
                     value={formData.claim_id}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
-                    required
                   />
                 </div>
 
@@ -528,7 +527,6 @@ export default function ClinicsDashboard() {
                     value={formData.patient_age}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
-                    required
                   />
                 </div>
 
@@ -543,7 +541,6 @@ export default function ClinicsDashboard() {
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
                     placeholder="insurer@example.com"
-                    required
                   />
                 </div>
 
@@ -557,7 +554,6 @@ export default function ClinicsDashboard() {
                     onChange={handleInputChange}
                     rows={3}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
-                    required
                   />
                 </div>
 
@@ -571,7 +567,6 @@ export default function ClinicsDashboard() {
                     value={formData.diagnosis}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
-                    required
                   />
                 </div>
 
@@ -585,7 +580,6 @@ export default function ClinicsDashboard() {
                     value={formData.icd_code}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
-                    required
                   />
                 </div>
 
@@ -599,7 +593,6 @@ export default function ClinicsDashboard() {
                     value={formData.cpt_code}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
-                    required
                   />
                 </div>
 
@@ -613,7 +606,6 @@ export default function ClinicsDashboard() {
                     value={formData.procedure_category}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
-                    required
                   />
                 </div>
 
@@ -627,7 +619,6 @@ export default function ClinicsDashboard() {
                     onChange={handleInputChange}
                     rows={2}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
-                    required
                   />
                 </div>
 
@@ -641,7 +632,6 @@ export default function ClinicsDashboard() {
                     onChange={handleInputChange}
                     rows={3}
                     className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
-                    required
                   />
                 </div>
               </div>
