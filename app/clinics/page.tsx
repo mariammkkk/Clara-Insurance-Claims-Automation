@@ -30,8 +30,7 @@ export default function ClinicsAuthPage() {
 
       if (data.user) {
         setMessage("Sign in successful! Redirecting...")
-        // You can redirect to a dashboard or clinic portal here
-        // router.push("/clinics/dashboard")
+        router.push("/clinics/dashboard")
       }
     } catch (err: any) {
       setError(err.message || "An error occurred during sign in")
