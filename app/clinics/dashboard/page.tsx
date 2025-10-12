@@ -79,6 +79,9 @@ export default function ClinicsDashboard() {
       setApprovedCount(approved)
       setRejectedCount(rejected)
 
+      // Calculate revenue savings based on approved cases
+      const REVENUE_PER_APPROVAL = 100
+
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
@@ -94,7 +97,7 @@ export default function ClinicsDashboard() {
         if (!dailySavings[date]) {
           dailySavings[date] = 0
         }
-        dailySavings[date] += 100 
+        dailySavings[date] += REVENUE_PER_APPROVAL
       })
 
       const chartData = []
@@ -243,37 +246,139 @@ export default function ClinicsDashboard() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Pending Requests
-            </h3>
-            <p className="text-3xl font-bold text-teal-600">{pendingCount}</p>
+        {/* Stats and Chart Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* Pie Chart */}
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-purple-400 via-blue-400 to-teal-400 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition duration-300"></div>
+            <div className="relative bg-white p-7 rounded-2xl shadow-lg border border-gray-200">
+              <h3 className="text-base font-semibold text-gray-900 mb-4 text-center">
+                Case Distribution
+              </h3>
+              <div className="flex items-center gap-6">
+                {/* Pie Chart on Left */}
+                <div className="flex-shrink-0">
+                  <svg viewBox="0 0 100 100" className="w-40 h-40 transform -rotate-90">
+                    {/* Approved slice */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      fill="none"
+                      stroke="#10b981"
+                      strokeWidth="20"
+                      strokeDasharray={`${((approvedCount / (approvedCount + rejectedCount + pendingCount || 1)) * 100) * 2.51327} ${251.327 - ((approvedCount / (approvedCount + rejectedCount + pendingCount || 1)) * 100) * 2.51327}`}
+                      strokeDashoffset="0"
+                    />
+                    {/* Rejected slice */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      fill="none"
+                      stroke="#ef4444"
+                      strokeWidth="20"
+                      strokeDasharray={`${((rejectedCount / (approvedCount + rejectedCount + pendingCount || 1)) * 100) * 2.51327} ${251.327 - ((rejectedCount / (approvedCount + rejectedCount + pendingCount || 1)) * 100) * 2.51327}`}
+                      strokeDashoffset={`-${((approvedCount / (approvedCount + rejectedCount + pendingCount || 1)) * 100) * 2.51327}`}
+                    />
+                    {/* Pending slice */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      fill="none"
+                      stroke="#3b82f6"
+                      strokeWidth="20"
+                      strokeDasharray={`${((pendingCount / (approvedCount + rejectedCount + pendingCount || 1)) * 100) * 2.51327} ${251.327 - ((pendingCount / (approvedCount + rejectedCount + pendingCount || 1)) * 100) * 2.51327}`}
+                      strokeDashoffset={`-${(((approvedCount + rejectedCount) / (approvedCount + rejectedCount + pendingCount || 1)) * 100) * 2.51327}`}
+                    />
+                  </svg>
+                </div>
+
+                {/* Stats on Right */}
+                <div className="flex-1 space-y-3 text-sm">
+                  <div className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <span className="text-gray-700 font-medium">Approved</span>
+                    </div>
+                    <span className="font-bold text-gray-900">
+                      {(approvedCount + rejectedCount + pendingCount) > 0
+                        ? ((approvedCount / (approvedCount + rejectedCount + pendingCount)) * 100).toFixed(0)
+                        : 0}% ({approvedCount})
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <span className="text-gray-700 font-medium">Rejected</span>
+                    </div>
+                    <span className="font-bold text-gray-900">
+                      {(approvedCount + rejectedCount + pendingCount) > 0
+                        ? ((rejectedCount / (approvedCount + rejectedCount + pendingCount)) * 100).toFixed(0)
+                        : 0}% ({rejectedCount})
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <span className="text-gray-700 font-medium">Pending</span>
+                    </div>
+                    <span className="font-bold text-gray-900">
+                      {(approvedCount + rejectedCount + pendingCount) > 0
+                        ? ((pendingCount / (approvedCount + rejectedCount + pendingCount)) * 100).toFixed(0)
+                        : 0}% ({pendingCount})
+                    </span>
+                  </div>
+                  <div className="pt-3 border-t border-gray-200">
+                    <div className="flex items-center justify-between p-2">
+                      <span className="text-gray-600 font-medium">Total Cases</span>
+                      <span className="text-2xl font-bold text-gray-900">{approvedCount + rejectedCount + pendingCount}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Approved
-            </h3>
-            <p className="text-3xl font-bold text-green-600">{approvedCount}</p>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Rejected
-            </h3>
-            <p className="text-3xl font-bold text-red-600">{rejectedCount}</p>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Total Savings
-            </h3>
-            <p className="text-3xl font-bold text-emerald-600">${totalSavings.toLocaleString()}</p>
-            <p className="text-xs text-gray-500 mt-1">Last 30 days</p>
+          {/* Revenue Saved Metric */}
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition duration-300"></div>
+            <div className="relative bg-white p-5 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between">
+              <h3 className="text-base font-semibold text-gray-900 mb-4 text-center">
+                Estimated Revenue Saved
+              </h3>
+              <div className="text-center mb-6 flex-1 flex flex-col justify-center">
+                <div className="text-5xl font-bold bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent mb-3">
+                  ${(approvedCount * 100).toLocaleString()}
+                </div>
+                <p className="text-sm text-gray-600 mb-4">through successful approvals</p>
+                <div className="inline-flex items-center gap-2 bg-green-50 px-4 py-2 rounded-lg mx-auto">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                  <span className="text-sm font-semibold text-green-700">
+                    {(approvedCount + rejectedCount + pendingCount) > 0
+                      ? ((approvedCount / (approvedCount + rejectedCount + pendingCount)) * 100).toFixed(1)
+                      : 0}% Success Rate
+                  </span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+                <div className="text-center">
+                  <p className="text-xs text-gray-500 mb-1">Avg per Approval</p>
+                  <p className="text-xl font-bold text-emerald-600">$100</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-gray-500 mb-1">Total Approvals</p>
+                  <p className="text-xl font-bold text-green-600">{approvedCount}</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
+        {/* Cumulative Savings Chart */}
         <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 mb-8">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Cumulative Savings (Last 30 Days)
