@@ -87,6 +87,31 @@ export default function ClinicsDashboard() {
     setSuccess("")
 
     try {
+      setSuccess("Analyzing case with AI...")
+      const analysisResponse = await fetch('/api/analyze-diagnosis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          caseData: {
+            ...formData,
+            patient_age: parseInt(formData.patient_age)
+          }
+        }),
+      })
+
+      const analysisResult = await analysisResponse.json()
+
+      let diagnosisAnalysis = null
+      if (analysisResult.success) {
+        diagnosisAnalysis = JSON.stringify(analysisResult.analysis)
+      } else {
+        console.error('Analysis failed:', analysisResult.error)
+        diagnosisAnalysis = `Analysis failed: ${analysisResult.error}`
+      }
+
+      // Then, insert the case with the analysis
       const { error } = await supabase
         .from('cases')
         .insert([
@@ -94,7 +119,8 @@ export default function ClinicsDashboard() {
             ...formData,
             patient_age: parseInt(formData.patient_age),
             user_id: user?.id,
-            clinic_email: user?.email
+            clinic_email: user?.email,
+            diagnosis_analysis: diagnosisAnalysis
           }
         ])
 
