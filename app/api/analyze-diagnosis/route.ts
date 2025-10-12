@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     const apiPayload = {
       userId: process.env.AIRIA_USER_ID || '',
-      request: userInput,
+      userInput,
       asyncOutput: false,
     }
 
