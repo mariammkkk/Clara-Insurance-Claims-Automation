@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 export default function ClinicsDashboard() {
   const router = useRouter()
@@ -19,6 +20,8 @@ export default function ClinicsDashboard() {
   const [pendingCount, setPendingCount] = useState(0)
   const [approvedCount, setApprovedCount] = useState(0)
   const [rejectedCount, setRejectedCount] = useState(0)
+  const [savingsData, setSavingsData] = useState<any[]>([])
+  const [totalSavings, setTotalSavings] = useState(0)
 
   const [formData, setFormData] = useState({
     claim_id: "",
@@ -76,6 +79,43 @@ export default function ClinicsDashboard() {
       setPendingCount(pending)
       setApprovedCount(approved)
       setRejectedCount(rejected)
+
+      const thirtyDaysAgo = new Date()
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+      const approvedCases = allCases.filter(c =>
+        c.status === 'approved' &&
+        new Date(c.created_at) >= thirtyDaysAgo
+      )
+
+      const dailySavings: { [key: string]: number } = {}
+
+      approvedCases.forEach(c => {
+        const date = new Date(c.created_at).toLocaleDateString()
+        if (!dailySavings[date]) {
+          dailySavings[date] = 0
+        }
+        dailySavings[date] += 100 
+      })
+
+      const chartData = []
+      let cumulativeSavings = 0
+
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date()
+        date.setDate(date.getDate() - i)
+        const dateStr = date.toLocaleDateString()
+        const savings = dailySavings[dateStr] || 0
+        cumulativeSavings += savings
+
+        chartData.push({
+          date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          savings: cumulativeSavings
+        })
+      }
+
+      setSavingsData(chartData)
+      setTotalSavings(cumulativeSavings)
     } catch (err) {
       console.error('Error fetching cases:', err)
     }
@@ -205,7 +245,7 @@ export default function ClinicsDashboard() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Pending Requests
@@ -226,6 +266,50 @@ export default function ClinicsDashboard() {
             </h3>
             <p className="text-3xl font-bold text-red-600">{rejectedCount}</p>
           </div>
+
+          <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Total Savings
+            </h3>
+            <p className="text-3xl font-bold text-emerald-600">${totalSavings.toLocaleString()}</p>
+            <p className="text-xs text-gray-500 mt-1">Last 30 days</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200 mb-8">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Cumulative Savings (Last 30 Days)
+          </h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={savingsData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 12 }}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                tick={{ fontSize: 12 }}
+                tickFormatter={(value) => `$${value}`}
+              />
+              <Tooltip
+                formatter={(value: number) => `$${value}`}
+                contentStyle={{
+                  backgroundColor: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px'
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="savings"
+                stroke="#10b981"
+                strokeWidth={3}
+                dot={{ fill: '#10b981', r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
 
         <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
