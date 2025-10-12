@@ -29,7 +29,6 @@ export default function ClinicsDashboard() {
     diagnosis: "",
     icd_code: "",
     cpt_code: "",
-    decision: "",
     explanation: "",
     procedure_category: "",
     procedure_description: "",
@@ -186,7 +185,6 @@ export default function ClinicsDashboard() {
         diagnosis: "",
         icd_code: "",
         cpt_code: "",
-        decision: "",
         explanation: "",
         procedure_category: "",
         procedure_description: "",
@@ -528,20 +526,6 @@ export default function ClinicsDashboard() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Decision
-                  </label>
-                  <input
-                    type="text"
-                    name="decision"
-                    value={formData.decision}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
-                    required
-                  />
-                </div>
-
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Explanation
@@ -633,10 +617,6 @@ export default function ClinicsDashboard() {
                     <p className="text-gray-900">{selectedCase.procedure_category}</p>
                   </div>
 
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Decision</h3>
-                    <p className="text-gray-900">{selectedCase.decision}</p>
-                  </div>
                 </div>
 
                 <div className="space-y-4">
