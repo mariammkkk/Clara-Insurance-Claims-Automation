@@ -12,6 +12,9 @@ export default function InsuranceDashboard() {
   const [cases, setCases] = useState<any[]>([])
   const [selectedCase, setSelectedCase] = useState<any>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
+  const [pendingCount, setPendingCount] = useState(0)
+  const [approvedCount, setApprovedCount] = useState(0)
+  const [rejectedCount, setRejectedCount] = useState(0)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -40,7 +43,17 @@ export default function InsuranceDashboard() {
 
       if (error) throw error
 
-      setCases(data || [])
+      const allCases = data || []
+      setCases(allCases)
+
+      // Calculate counts by status
+      const pending = allCases.filter(c => c.status === 'pending').length
+      const approved = allCases.filter(c => c.status === 'approved').length
+      const rejected = allCases.filter(c => c.status === 'rejected').length
+
+      setPendingCount(pending)
+      setApprovedCount(approved)
+      setRejectedCount(rejected)
     } catch (err) {
       console.error('Error fetching cases:', err)
     }
@@ -113,21 +126,21 @@ export default function InsuranceDashboard() {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Pending Review
             </h3>
-            <p className="text-3xl font-bold text-blue-600">0</p>
+            <p className="text-3xl font-bold text-blue-600">{pendingCount}</p>
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Approved Today
+              Approved
             </h3>
-            <p className="text-3xl font-bold text-green-600">0</p>
+            <p className="text-3xl font-bold text-green-600">{approvedCount}</p>
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Rejected Today
+              Rejected
             </h3>
-            <p className="text-3xl font-bold text-red-600">0</p>
+            <p className="text-3xl font-bold text-red-600">{rejectedCount}</p>
           </div>
         </div>
 
