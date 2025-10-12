@@ -53,7 +53,7 @@ html {
 }
         `}</style>
       </head>
-      <body className={`${figtree.variable} ${instrumentSerif.variable}`}>{children}</body>
+      <body className={`${figtree.variable} ${instrumentSerif.variable}`} suppressHydrationWarning>{children}</body>
     </html>
   )
 }

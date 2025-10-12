@@ -18,7 +18,7 @@ export default function ShaderShowcase() {
       {/* Scrollable Content */}
       <div className="relative z-10 pointer-events-none">
         {/* Spacer to keep white content below - increase this to push content lower */}
-        <div style={{ height: '150vh' }} className="pointer-events-auto"></div>
+        <div style={{ height: '150vh' }}></div>
         
         {/* White Content Section */}
         <div className="bg-white rounded-t-3xl shadow-2xl pointer-events-auto">
