@@ -29,8 +29,7 @@ export default function InsuranceAuthPage() {
 
       if (data.user) {
         setMessage("Sign in successful! Redirecting...")
-        // You can redirect to a dashboard or insurance portal here
-        // router.push("/insurance/dashboard")
+        router.push("/insurance/dashboard")
       }
     } catch (err: any) {
       setError(err.message || "An error occurred during sign in")
