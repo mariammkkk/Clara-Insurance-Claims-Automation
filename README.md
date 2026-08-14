@@ -1,6 +1,8 @@
 # Clara — Agentic AI Workflow for Insurance Claims Automation
 
 Demo Video: [![Demo Video](https://img.shields.io/badge/YouTube-Video-red?logo=youtube)](https://www.youtube.com/watch?v=uy74DTxScvI)
+<br>
+Product Requirements Document: [Link to PRD](/clara_prd.pdf)
 
 ## What is Clara
 
